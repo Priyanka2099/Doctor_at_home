@@ -16,6 +16,7 @@ import json
 import geocoder
 from geopy.geocoders import Nominatim
 import urllib
+import sys
 from bs4 import BeautifulSoup
 API_KEY='AIzaSyCpFe5FfiTuTZHiOEy8zZXcYMojIyeNJfQ'
 engine=pyttsx3.init()
@@ -88,8 +89,8 @@ clf = clf1.fit(x_train,y_train)
 importances = clf.feature_importances_
 indices = np.argsort(importances)[::-1]
 features = cols
-
-sen1="Hi, I am a chatbot,I can predict disease based on symptoms"
+global val1
+sen1="Hi, I am medbot,I can predict disease based on symptoms"
 speak(sen1)
 print(sen1)
 sen2="You can either type or tell, enter text or tell based on your preference"
@@ -117,10 +118,17 @@ def enter(symptoms_present):
 
     df = pd.DataFrame(training, columns=training.columns.values)
     col_list = df.columns.tolist()
-    sen10='Enter all the symptoms you have'
-    speak(sen10)
-    print(sen10)
-    val = input()
+    if val1=="tell":
+        sen10="Tell me all the symptoms that you have"
+        speak(sen10)
+        print(sen10)
+        val=speech()
+    else:
+        sen10 = 'Enter all the symptoms you have'
+        speak(sen10)
+        print(sen10)
+        val=input()
+
     r = Rake()
     a = r.extract_keywords_from_text(val)
     b = r.get_ranked_phrases()
@@ -142,13 +150,24 @@ def enter(symptoms_present):
         symptoms_present.append(present_disease)
         return present_disease
     else:
-        print("Sorry,I am not able to predict your disease")
+        sen21="Sorry,I am not able to predict your disease"
+        speak(sen21)
+        print(sen21)
+        speak("Take care,bye")
+        sys.exit()
+
 def tree_to_code(tree, feature_names):
-    sen11="Do you want to enter symptoms or should I ask?"
-    speak(sen11)
-    print(sen11)
-    ip10=input()
-    ip10=ip10.lower()
+    if val1=="tell":
+        sen11 = "Do you want to tell symptoms or should I ask?"
+        speak(sen11)
+        print(sen11)
+        ip10 = speech()
+    else:
+        sen11 = "Do you want to type symptoms or should I ask?"
+        speak(sen11)
+        print(sen11)
+        ip10 = input()
+    ip10 = ip10.lower()
     symptoms_present = []
     if "i" in ip10:
         present_disease=enter(symptoms_present)
@@ -202,6 +221,10 @@ def tree_to_code(tree, feature_names):
                     print(i)
                 confidence_level = (1.0 * len(symptoms_present)) / len(symptoms_given)
                 print("confidence level is " + str(confidence_level))
+
+                recurse(0, 1)
+
+
     sen5="Do you want to know more about your disease? Enter yes or no"
     speak(sen5)
     print(sen5)
@@ -239,9 +262,8 @@ def tree_to_code(tree, feature_names):
             i = i.lower()
             googler("Medicines for " + i)
     else:
+        speak("Take care,bye")
         print("Take care,bye")
 
-
-    recurse(0, 1)
 
 tree_to_code(clf, cols)
