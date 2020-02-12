@@ -1,15 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>chatbot</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
 </head>
 <body>
-    <h1>Hello,do you talk to medbot that can predict your disease?</h1>
-    <h2>If yes click on the button below</h2>
-    <form action="/medbot" method="POST">
-    <button class="btn btn-lg btn-primary btn-block" type="submit">Talk to Medbot</button>
-    </form>
+    <h1 class="jumbotron text-center">MEDBOT</h1>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6 offset-sm-3">
+            <div id="chatbox" class="border border-success">
+                <p class="botText"><span>Hi, I am medbot,I can predict disease based on symptoms</span></p>
+            </div>
+            <div id="userInput">
+                <input id="textInput" class="form-control" type="text" name="msg" placeholder="Type Your Message Here">
+                <input id="buttonInput" class="btn btn-success form-control" type="submit" value="Send">
+                <button id="start-btn" type="button">Start</button>
+                <button id="stop-record-btn" type="button">Stop</button>         
+            </div>
+        </div>
+    </div>
+<script>
+    function getResponse() {
+        let userText = $("#textInput").val();
+        let userHtml = '<p class="userText"><span>' + userText + '</span></p>';
+        $("#textInput").val("");
+        $("#chatbox").append(userHtml);
+        document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+        $.get("/get", { msg: userText }).done(function(data) {
+        var botHtml = '<p class="botText"><span>' + data + '</span></p>';
+        $("#chatbox").append(botHtml);
+        document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+        var msg = new SpeechSynthesisUtterance(data);
+        window.speechSynthesis.speak(msg);
+});
+}
+    $("#textInput").keypress(function(e) {
+    //if enter key is pressed
+        if(e.which == 13) {
+            getResponse();
+        }
+    });
+    $("#buttonInput").click(function() {
+        getResponse();
+    });
+var SpeechRecognition = window.webkitSpeechRecognition; 
+var recognition = new SpeechRecognition();
+var instructions = $('instructions');
+recognition.continuous = true;
+recognition.onresult = function(event) {
+var current = event.resultIndex;
+var transcript = event.results[current][0].transcript;
+let userHtml = '<p class="userText"><span>' + transcript + '</span></p>';
+$("#textInput").val("");
+$("#chatbox").append(userHtml);
+document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+$.get("/get", { msg: transcript }).done(function(data) {
+var botHtml = '<p class="botText"><span>' + data + '</span></p>';
+$("#chatbox").append(botHtml);
+document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
+var msg = new SpeechSynthesisUtterance(data);
+window.speechSynthesis.speak(msg);
+});
 
+  };
+  
+  recognition.onstart = function() { 
+    instructions.text('Voice recognition is ON.');
+  }
+  
+  recognition.onspeechend = function() {
+    instructions.text('No activity.');
+  }
+  
+  recognition.onerror = function(event) {
+    if(event.error == 'no-speech') {
+      instructions.text('Try again.');  
+    }
+  }
+  
+  $('#start-btn').on('click', function(e) {
+    recognition.start();
+  });
+  $('#stop-record-btn').on('click', function(e) {
+    recognition.stop();
+    });
+  
+
+
+
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</div>
 </body>
 </html>
