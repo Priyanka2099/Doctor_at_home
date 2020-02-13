@@ -48,28 +48,34 @@ def googler(query):
     speak("You can click on the links here")
 
 def places():
-    google_places=GooglePlaces(API_KEY)
-    geolocator=Nominatim()
-    sen0="Enter your city,country"
-    speak(sen0)
-    print(sen0)
-    addr=input()
-    loc=geolocator.geocode(addr,timeout=50000)
-    lat1=loc.latitude
-    lon1=loc.longitude
+    try:
+        google_places = GooglePlaces(API_KEY)
+        geolocator = Nominatim()
+        sen0 = "Enter your city,country"
+        speak(sen0)
+        print(sen0)
+        addr = input()
+        loc = geolocator.geocode(addr, timeout=50000)
+        lat1 = loc.latitude
+        lon1 = loc.longitude
 
-    query_result=google_places.nearby_search(
-        lat_lng={'lat': lat1 , 'lng': lon1},
-        types=[types.TYPE_HOSPITAL])
-    speak("Hospitals in your city are:")
-    if query_result.has_attributions:
-        print(query_result.html_attributions)
-    for place in query_result.places:
-        print(place.name)
+        query_result = google_places.nearby_search(
+            lat_lng={'lat': lat1, 'lng': lon1},
+            types=[types.TYPE_HOSPITAL])
+        speak("Hospitals in your city are:")
+        if query_result.has_attributions:
+            print(query_result.html_attributions)
+        for place in query_result.places:
+            print(place.name)
+    except:
+        sen31="Sorry,I am unable to process your request"
+        speak(sen31)
+        print(sen31)
 
 training=pd.read_csv('Training.csv')
 testing=pd.read_csv('Testing.csv')
 cols     = training.columns
+
 cols     = cols[:-1]
 x        = training[cols]
 y        = training['prognosis']
@@ -135,6 +141,7 @@ def enter(symptoms_present):
     count = 0
     max_count = 0
     found = 0
+    symptoms_given=[]
     if (any(x in b for x in col_list)):
         for ind in df.index:
             for i in b:
@@ -147,7 +154,8 @@ def enter(symptoms_present):
         present_disease = df.at[found, 'prognosis']
         speak("I think you have " + present_disease)
         print("I think you have " + present_disease)
-        symptoms_present.append(present_disease)
+
+
         return present_disease
     else:
         sen21="Sorry,I am not able to predict your disease"
@@ -155,7 +163,8 @@ def enter(symptoms_present):
         print(sen21)
         speak("Take care,bye")
         sys.exit()
-
+global inp11
+global ip10
 def tree_to_code(tree, feature_names):
     if val1=="tell":
         sen11 = "Do you want to tell symptoms or should I ask?"
@@ -169,6 +178,7 @@ def tree_to_code(tree, feature_names):
         ip10 = input()
     ip10 = ip10.lower()
     symptoms_present = []
+    symptoms_given=[]
     if "i" in ip10:
         present_disease=enter(symptoms_present)
     else:
@@ -180,6 +190,7 @@ def tree_to_code(tree, feature_names):
         feature_name = [
             feature_names[i] if i != _tree.TREE_UNDEFINED else "undefined!"
             for i in tree_.feature
+
         ]
 
         def recurse(node, depth):
@@ -211,59 +222,68 @@ def tree_to_code(tree, feature_names):
                     print( "I think you have " + i )
 
                 red_cols = reduced_data.columns
-                symptoms_given = red_cols[reduced_data.loc[present_disease].values[0].nonzero()]
-                for i in symptoms_present:
-                    i=i.replace("_"," ")
-                    speak("symptoms that you have is " + i)
-                    print("symptoms that you have is " + i)
-                    print("Other general symptoms for this disease are ")
+                symptoms_given.append(red_cols[reduced_data.loc[present_disease].values[0].nonzero()])
+
+                speak("Do you have any of these symptoms?")
                 for i in symptoms_given:
-                    print(i)
-                confidence_level = (1.0 * len(symptoms_present)) / len(symptoms_given)
-                print("confidence level is " + str(confidence_level))
+                    for j in i:
+                       print(j)
 
-                recurse(0, 1)
+        recurse(0, 1)
+    def sym():
+        if "i" not in ip10:
+            inp10 = input("Do you have any of these symptoms?")
+            inp11 = inp10.lower()
+        else:
+            inp11="yes"
+        if (inp11 == "yes"):
+            sen5 = "Do you want to know more about your disease? Enter yes or no"
+            speak(sen5)
+            print(sen5)
+            ip1 = input()
+            if (ip1 == "yes"):
+                sen4 = "You can read more about your disease here..."
+                speak(sen4)
+                print(sen4)
+                for i in symptoms_present:
+                    try:
+                        i = i.lower()
+                        print(wikipedia.summary(i, sentences=20))
+                    except:
+                        print("Sorry, couldn't get more information")
+            sen6 = "Do you want to know which are the hospitals in your city?"
+            speak(sen6)
+            print(sen6)
+            ip2 = input()
+            if (ip2 == "yes"):
+                places()
+            sen7 = "Do you want the link for home remedies for your diseasse?"
+            speak(sen7)
+            print(sen7)
+            ip3 = input()
+            if (ip3 == "yes"):
+                for i in symptoms_present:
+                    i = i.lower()
+                    googler(i + "home remedies")
+            sen8 = "Do you want to know few medicines for you disease?"
+            speak(sen8)
+            print(sen8)
+            ip4 = input()
+            if (ip4 == "yes"):
+                for i in symptoms_present:
+                    i = i.lower()
+                    googler("Medicines for " + i)
+                speak("Take care,bye")
+                print("Take care,bye")
+            else:
+                speak("Take care,bye")
+                print("Take care,bye")
+        else:
 
-
-    sen5="Do you want to know more about your disease? Enter yes or no"
-    speak(sen5)
-    print(sen5)
-    ip1=input()
-    if (ip1 == "yes"):
-        sen4 = "You can read more about your disease here..."
-        speak(sen4)
-        print(sen4)
-        for i in symptoms_present:
-            try:
-                i = i.lower()
-                print(wikipedia.summary(i, sentences=20))
-            except:
-                print("Sorry, couldn't get more information")
-    sen6 = "Do you want to know which are the hospitals in your city?"
-    speak(sen6)
-    print(sen6)
-    ip2 = input()
-    if (ip2 == "yes"):
-        places()
-    sen7 = "Do you want the link for home remedies for your diseasse?"
-    speak(sen7)
-    print(sen7)
-    ip3 = input()
-    if (ip3 == "yes"):
-        for i in symptoms_present:
-            i = i.lower()
-            googler(i + "home remedies")
-    sen8 = "Do you want to know few medicines for you disease?"
-    speak(sen8)
-    print(sen8)
-    ip4 = input()
-    if (ip4 == "yes"):
-        for i in symptoms_present:
-            i = i.lower()
-            googler("Medicines for " + i)
-    else:
-        speak("Take care,bye")
-        print("Take care,bye")
-
-
+            sen30 = "You have to be rediagnosed"
+            print(sen30)
+            speak(sen30)
+            recurse(1,2)
+            sym()
+    sym()
 tree_to_code(clf, cols)
