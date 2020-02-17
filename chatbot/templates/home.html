@@ -6,21 +6,26 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src='https://code.responsivevoice.org/responsivevoice.js'></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+<style>
+    i:hover{
+      color:crimson;
+    }
+
+</style>
 <body>
     <h1 class="jumbotron text-center">MEDBOT</h1>
 <div class="container">
     <div class="row">
         <div class="col-sm-6 offset-sm-3">
             <div id="chatbox" class="border border-success">
-                <p class="botText"><span>Hi, I am medbot,I can predict disease based on symptoms</span></p>
+                <p class="botText"><span>Hi, I am medbot,I can predict disease based on symptoms<br>You can either type or tell, enter text or tell based on your preference</span></p>
             </div>
             <div id="userInput">
-                <input id="textInput" class="form-control" type="text" name="msg" placeholder="Type Your Message Here">
-                <input id="buttonInput" class="btn btn-success form-control" type="submit" value="Send">
-                <button id="start-btn" type="button">Start</button>
-                <button id="stop-record-btn" type="button">Stop</button>         
+               <span><nobr><input id="textInput" class="form-control" type="text" name="msg" placeholder="Type Your Message Here"><i id="buttonInput"  class="fa fa-send-o" style="font-size:36px;float: right;"></i><i id="start-btn" class="fa fa-microphone" style="font-size:36px;float: right;"></i></nobr></span>
+                <p id="instructions">Hover on the mic</p>
             </div>
         </div>
     </div>
@@ -48,9 +53,9 @@
     $("#buttonInput").click(function() {
         getResponse();
     });
-var SpeechRecognition = window.webkitSpeechRecognition; 
+var SpeechRecognition = window.webkitSpeechRecognition;
 var recognition = new SpeechRecognition();
-var instructions = $('instructions');
+var instructions = $('#instructions');
 recognition.continuous = true;
 recognition.onresult = function(event) {
 var current = event.resultIndex;
@@ -68,30 +73,43 @@ window.speechSynthesis.speak(msg);
 });
 
   };
-  
-  recognition.onstart = function() { 
+
+  recognition.onstart = function() {
     instructions.text('Voice recognition is ON.');
   }
-  
+
   recognition.onspeechend = function() {
     instructions.text('No activity.');
   }
-  
+
   recognition.onerror = function(event) {
     if(event.error == 'no-speech') {
-      instructions.text('Try again.');  
+      instructions.text('Try again.');
     }
   }
-  
-  $('#start-btn').on('click', function(e) {
+
+  $('#start-btn').on('mouseenter', function(e) {
     recognition.start();
   });
-  $('#stop-record-btn').on('click', function(e) {
+  $('#start-btn').on('mouseleave', function(e) {
     recognition.stop();
     });
-  
 
+    $("#start-btn").click(function () {
+    $("#start-btn").attr("id", "stop-btn");
 
+    $("#stop-btn").unbind("click").click(function () {
+        $("#stop-btn").attr("id", "start-btn");
+    });
+});
+$(function() {
+
+    $(".navbar-nav li a").on('click', function() {
+        $(".navbar-nav li a").css('text-decoration', 'none');
+        $(this).css('text-decoration', 'underline');
+    });
+
+});
 
     </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>

@@ -18,7 +18,7 @@ from geopy.geocoders import Nominatim
 import urllib
 import sys
 from bs4 import BeautifulSoup
-API_KEY='AIzaSyCpFe5FfiTuTZHiOEy8zZXcYMojIyeNJfQ'
+API_KEY='AIzaSyBwIxGF4R3SPITPcW46D1nU2qiTMibfkIs'
 engine=pyttsx3.init()
 def speak(sen):
     newRate=180
@@ -65,6 +65,7 @@ def places():
         speak("Hospitals in your city are:")
         if query_result.has_attributions:
             print(query_result.html_attributions)
+            print("123")
         for place in query_result.places:
             print(place.name)
     except:
@@ -120,7 +121,7 @@ def print_disease(node):
     #print(val)
     disease = le.inverse_transform(val[0])
     return disease
-def enter(symptoms_present):
+def enter():
 
     df = pd.DataFrame(training, columns=training.columns.values)
     col_list = df.columns.tolist()
@@ -156,7 +157,7 @@ def enter(symptoms_present):
         print("I think you have " + present_disease)
 
 
-        return present_disease
+        return b
     else:
         sen21="Sorry,I am not able to predict your disease"
         speak(sen21)
@@ -180,7 +181,7 @@ def tree_to_code(tree, feature_names):
     symptoms_present = []
     symptoms_given=[]
     if "i" in ip10:
-        present_disease=enter(symptoms_present)
+        present_disease=enter()
     else:
         sen3 = "Please reply Yes or No for the following symptoms"
         speak(sen3)
@@ -195,6 +196,7 @@ def tree_to_code(tree, feature_names):
 
         def recurse(node, depth):
             indent = "  " * depth
+
             if tree_.feature[node] != _tree.TREE_UNDEFINED:
                 name = feature_name[node]
                 name=name.replace("_"," ")
