@@ -40,8 +40,10 @@
         var botHtml = '<p class="botText"><span>' + data + '</span></p>';
         $("#chatbox").append(botHtml);
         document.getElementById('userInput').scrollIntoView({block: 'start', behavior: 'smooth'});
-        var msg = new SpeechSynthesisUtterance(data);
-        window.speechSynthesis.speak(msg);
+        if(data.length<=150) {
+            var msg = new SpeechSynthesisUtterance(data);
+            window.speechSynthesis.speak(msg);
+            }
 });
 }
     $("#textInput").keypress(function(e) {

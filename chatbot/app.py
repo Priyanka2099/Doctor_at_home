@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request
 import flask
 import time
@@ -24,7 +23,7 @@ import urllib
 import sys
 from bs4 import BeautifulSoup
 
-API_KEY = 'AIzaSyBwIxGF4R3SPITPcW46D1nU2qiTMibfkIs'
+API_KEY = 'AIzaSyCpFe5FfiTuTZHiOEy8zZXcYMojIyeNJfQ'
 engine = pyttsx3.init()
 training = pd.read_csv('Training.csv')
 testing = pd.read_csv('Testing.csv')
@@ -71,6 +70,9 @@ depth = 1
 flag = 0
 f1 = 0
 f2 = 0
+y2 = 0
+y = 0
+p = 0
 global tree_
 global feature_name
 app = Flask(__name__)
@@ -98,24 +100,23 @@ def googler(query):
     return (str(results) + "You can click on the links here")
 
 
-def places(place):
+def places(msg):
     try:
         google_places = GooglePlaces(API_KEY)
         geolocator = Nominatim()
-        addr = place
-        loc = geolocator.geocode(addr, timeout=50000)
+        loc = geolocator.geocode(msg, timeout=50000)
         lat1 = loc.latitude
         lon1 = loc.longitude
 
         query_result = google_places.nearby_search(
             lat_lng={'lat': lat1, 'lng': lon1},
             types=[types.TYPE_HOSPITAL])
-        # if query_result.has_attributions:
-        # print(query_result.html_attributions)
-        return ("Hospitals in your city are:" +query_result.html_attributions+ query_result.places)
+        var50 = []
+        for place in query_result.places:
+            var50.append(place.name)
+        return ("Hospitals in your city are:\n" + str(var50))
     except:
-        sen31 = "Sorry,I am unable to process your request"
-        return (sen31)
+        return "Sorry,unable to process your request"
 
 
 @app.route('/')
@@ -131,9 +132,10 @@ def get_bot_response():
     global val1
     global d
     global f2
-    f2 = 0
+
     if d < 3 or "i" not in ip10:
         d += 1
+        print(f2)
         if msg == "tell":
             print("jnnfs")
             val1 = msg
@@ -145,9 +147,12 @@ def get_bot_response():
             m = ""
             user_input = tree_to_code(m, clf, cols)
 
-        elif ((msg == "yes" or msg == "no") and (f2 == 1)):
+        elif (f2 == 1):
             if (msg == "no"):
                 print("hello")
+                user_input = rediagnosis()
+            elif (msg == "yes"):
+                print("hello123")
                 user_input = rediagnosis()
             else:
                 print("hii")
@@ -267,58 +272,10 @@ def tree_to_code(ip, tree, feature_names):
                     ]
                     return (sen3)
                 else:
-                    def recurse(node, d):
-                        global symptoms_present
-                        global symptoms_given
-                        global tree_
-                        global feature_name
-                        global flag
-                        global n10
-                        global depth
-                        global msg
-                        global msg11
-                        indent = " " * (d)
-                        if tree_.feature[node] != _tree.TREE_UNDEFINED:
-                            name = feature_name[node]
-                            name = name.replace("_", " ")
-                            threshold = tree_.threshold[node]
-                            if (flag == 0):
-                                indent = " " * (d)
-                                flag = 1
-                                return (name + " ?")
-                            else:
-                                flag = 0
-                                ans = msg.lower()
-                                if ans == 'yes':
-                                    val = 1
-                                else:
-                                    val = 0
-                                if val <= threshold:
-                                    n10 = tree_.children_left[node]
-                                    depth = d + 1
-                                    d = d + 1
-                                    return (recurse(n10, d))
-                                else:
-                                    symptoms_present.append(name)
-                                    n10 = tree_.children_right[node]
-                                    depth = d + 1
-                                    d = d + 1
-                                    return (recurse(n10, d))
-                        else:
-                            present_disease = print_disease(tree_.value[node])
-                            for i in present_disease:
-                                sen = "I think you have " + i + "\n"
-                            a = " "
-                            red_cols = reduced_data.columns
-                            symptoms_given.append(red_cols[reduced_data.loc[present_disease].values[0].nonzero()])
-                            for i in symptoms_given:
-                                for j in i:
-                                    a = a + "\n," + j
-                            msg11 = sen + str(a)
-                            return (sym())
-                d = depth
-                an = (recurse(n10, d))
-                return an
+
+                    d = depth
+                    an = (recurse(n10, d))
+                    return an
             msg1 = sym()
             return msg1
 
@@ -331,9 +288,11 @@ def sym():
     global inp11
     global f
     global z
+    global p
     ip1 = ""
     if "i" not in ip10:
-        if (z == 0):
+        if (z == 0 or p == 1):
+            p += 1
             z += 1
             return (msg11 + "\n Do you have any of these symptoms?")
         else:
@@ -381,9 +340,12 @@ def sym():
                     f += 1
                     ip3 = msg
                     if (ip3 == "yes"):
-                        for i in symptoms_present:
-                            i = i.lower()
-                            sen8 = googler(i + "home remedies")
+                        try:
+                            for i in symptoms_present:
+                                i = i.lower()
+                                sen8 = googler(i + "home remedies")
+                        except:
+                            sen8 = "Please check your internet connection\n"
                     else:
                         sen8 = ""
                     return sen8 + "\n Do you want to know few medicines for your disease?"
@@ -391,21 +353,101 @@ def sym():
                     f += 1
                     ip4 = msg
                     if (ip4 == "yes"):
-                        for i in symptoms_present:
-                            i = i.lower()
-                        return (googler("Medicines for " + i) + "\n Stay Healthy, Take care ,Bye")
+                        try:
+                            for i in symptoms_present:
+                                i = i.lower()
+                            return (googler("Medicines for " + i) + "\n Stay Healthy, Take care ,Bye")
+                        except:
+                            return "Please check your internet connection"
                     else:
                         return ("Stay Healthy,Take care,bye")
                 else:
                     pass
 
 
+def recurse(node, d):
+    global symptoms_present
+    global symptoms_given
+    global tree_
+    global feature_name
+    global flag
+    global n10
+    global depth
+    global msg
+    global msg11
+    indent = " " * (d)
+    if tree_.feature[node] != _tree.TREE_UNDEFINED:
+        name = feature_name[node]
+        name = name.replace("_", " ")
+        threshold = tree_.threshold[node]
+        if (flag == 0):
+            indent = " " * (d)
+            flag = 1
+            return (name + " ?")
+        else:
+            flag = 0
+            ans = msg.lower()
+            if ans == 'yes':
+                val = 1
+            else:
+                val = 0
+            if val <= threshold:
+                n10 = tree_.children_left[node]
+                depth = d + 1
+                d = d + 1
+                return (recurse(n10, d))
+            else:
+                symptoms_present.append(name)
+                n10 = tree_.children_right[node]
+                depth = d + 1
+                d = d + 1
+                return (recurse(n10, d))
+    else:
+        print("pak")
+        present_disease = print_disease(tree_.value[node])
+        for i in present_disease:
+            sen = "I think you have " + i + "." + "\n Other general symptoms are:\n"
+        a = " "
+        red_cols = reduced_data.columns
+        symptoms_given.append(red_cols[reduced_data.loc[present_disease].values[0].nonzero()])
+        for i in symptoms_given:
+            for j in i:
+                print(j)
+                a = a + "\n," + j
+        msg11 = sen + str(a)
+        return (sym())
+
+
 def rediagnosis():
     global y
-    sen30 = "You have to be rediagnosed"
-    return sen30
-    recurse(n10, d)
-    sym()
+    global am
+    global pk
+    global y2
+    if (y == 0):
+        y += 1
+        sen30 = recurse(1, 2)
+        return "You have to be rediagnosed\n," + sen30
+    elif (y == 1 or y == 2):
+        if (msg == "no"):
+            if (y2 == 0):
+                y2 += 1
+                return (recurse(1, 2))
+            else:
+                d = depth
+                print("hey")
+                return (recurse(n10, d))
+        elif (msg == "yes"):
+            print("xyz")
+            y += 1
+            d = depth
+            return (recurse(n10, d))
+        else:
+            print("123")
+            d = depth
+            return (recurse(n10, d))
+    else:
+        print("456")
+        return (sym())
 
 
 if __name__ == '__main__':
